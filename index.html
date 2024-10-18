@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Jogo da Memória</title>
+    <style>
+        .tabuleiro {
+            display: grid;
+            grid-template-columns: repeat(4, 100px);
+            gap: 10px;
+            margin: 50px auto;
+            width: 440px;
+        }
+        .carta {
+            width: 100px;
+            height: 100px;
+            background-color: #333;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            color: white;
+        }
+        .virada {
+            background-color: #f39c12;
+        }
+        /* Estilo para o botão de reiniciar */
+        .reiniciar {
+            display: block;
+            margin: 20px auto;
+            padding: 10px 20px;
+            font-size: 18px;
+            background-color: #2980b9;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        .reiniciar:hover {
+            background-color: #3498db;
+        }
+    </style>
+</head>
+<body>
+    <div class="tabuleiro"></div>
+    <!-- Botão para reiniciar o jogo -->
+    <button class="reiniciar">Reiniciar Jogo</button>
+    <script>
+        const tabuleiro = document.querySelector(".tabuleiro"); // Seleciona o tabuleiro
+        const reiniciarButton = document.querySelector(".reiniciar"); // Seleciona o botão de reiniciar
+
+        const cartas = ["A", "B", "C", "D", "E", "F", "G", "H"]; // Letras das cartas
+        let cartasDuplicadas = [...cartas, ...cartas]; // Duplica as cartas
+        let primeiraCarta, segundaCarta; // Variáveis para controlar as cartas viradas
+        let bloqueio = false; // Para impedir interações durante a verificação
+
+        // Função para embaralhar e criar o tabuleiro
+        function iniciarJogo() {
+            cartasDuplicadas.sort(() => 0.5 - Math.random()); // Embaralha as cartas
+            tabuleiro.innerHTML = ""; // Limpa o tabuleiro
+
+            // Cria as cartas no tabuleiro
+            cartasDuplicadas.forEach((letra) => {
+                const carta = document.createElement("div"); // Cria um novo elemento <div>
+                carta.classList.add("carta"); // Adiciona a classe carta
+                carta.dataset.letra = letra; // Atribui a letra correspondente
+                carta.addEventListener("click", virarCarta); // Adiciona o evento de clique
+                tabuleiro.appendChild(carta); // Adiciona a carta ao tabuleiro
+            });
+        }
+
+        function virarCarta() {
+            if (bloqueio) return; // Se o jogo está bloqueado, retorna
+            if (this === primeiraCarta) return; // Se a mesma carta for clicada, retorna
+            this.classList.add("virada"); // Marca a carta como virada
+            this.textContent = this.dataset.letra; // Exibe a letra da carta
+
+            // Se não houver carta virada, marca a carta atual como primeira
+            if (!primeiraCarta) {
+                primeiraCarta = this;
+                return; // Sai da função
+            }
+
+            // Se já houver uma carta virada, marca a atual como segunda
+            segundaCarta = this;
+            verificarPar(); // Verifica se as duas cartas formam um par
+        }
+
+        function verificarPar() {
+            // Se as letras das cartas forem iguais
+            if (primeiraCarta.dataset.letra === segundaCarta.dataset.letra) {
+                desabilitarCartas(); // Desabilita as cartas
+            } else {
+                desvirarCartas(); // Desvira as cartas
+            }
+        }
+
+        function desabilitarCartas() {
+            // Remove o evento de clique das cartas
+            primeiraCarta.removeEventListener("click", virarCarta);
+            segundaCarta.removeEventListener("click", virarCarta);
+            resetarTabuleiro(); // Prepara o jogo para a próxima seleção
+        }
+
+        function desvirarCartas() {
+            bloqueio = true; // Bloqueia novas interações
+            setTimeout(() => {
+                primeiraCarta.classList.remove("virada"); // Remove a classe virada
+                segundaCarta.classList.remove("virada"); // Remove a classe virada
+                primeiraCarta.textContent = ""; // Limpa o conteúdo da carta
+                segundaCarta.textContent = ""; // Limpa o conteúdo da carta
+                resetarTabuleiro(); // Prepara o jogo para a próxima seleção
+            }, 1000); // Espera 1 segundo antes de desvirar
+        }
+
+        function resetarTabuleiro() {
+            // Reseta as variáveis que controlam o estado do jogo
+            [primeiraCarta, segundaCarta, bloqueio] = [null, null, false];
+        }
+
+        // Adiciona o evento de clique ao botão de reiniciar
+        reiniciarButton.addEventListener("click", iniciarJogo);
+
+        // Inicia o jogo ao carregar a página
+        iniciarJogo();
+    </script>
+</body>
+</html>
